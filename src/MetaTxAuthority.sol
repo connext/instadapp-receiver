@@ -1,15 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-interface IMetaTxAuthority {
-  function verifyAndCast(
-    bytes32 _transferId,
-    uint256 _amount,
-    address _asset,
-    address _originSender,
-    uint32 _origin,
-    bytes memory _callData
-  ) external returns (bytes memory);
+interface IDSA {
+  function cast(
+    string[] calldata _targetNames,
+    bytes[] calldata _datas,
+    address _origin
+  ) external payable returns (bytes32);
 }
 
 contract MetaTxAuthority {
@@ -69,5 +66,20 @@ contract MetaTxAuthority {
       hashCastData(castData)
     ));
     return ecrecover(digest, v, r, s) == sender;
+  }
+
+  function cast(
+    CastData memory castData, 
+    address sender,
+    address dsa,
+    uint8 v, 
+    bytes32 r, 
+    bytes32 s
+  ) public payable {
+    require(verify(castData, sender, v, r, s), "Invalid signature");
+
+    // send funds to DSA
+
+    IDSA(dsa).cast{value: msg.value}(castData._targetNames, castData._datas, castData._origin);
   }
 }
