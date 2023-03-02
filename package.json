@@ -1,0 +1,22 @@
+{
+  "name": "instadapp-receiver",
+  "description": "Connext Receiver for Instadapp",
+  "version": "1.0.0",
+  "author": {
+    "name": "Eddie Ye",
+    "url": "https://github.com/just-a-node"
+  },
+  "devDependencies": {
+    "prettier": "^2.8.4",
+    "rimraf": "^4.1.2",
+    "solhint": "^3.4.0"
+  },
+  "packageManager": "yarn@3.4.1",
+  "scripts": {
+    "clean": "rimraf cache out",
+    "lint": "yarn lint:sol && yarn prettier:check",
+    "lint:sol": "forge fmt --check && yarn solhint \"{script,src,test}/**/*.sol\"",
+    "prettier:check": "prettier --check \"**/*.{json,md,yml}\"",
+    "prettier:write": "prettier --write \"**/*.{json,md,yml}\""
+  }
+}
