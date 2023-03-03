@@ -1,6 +1,19 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
+struct CastData {
+  string[] _targetNames;
+  bytes[] _datas;
+  address _origin;
+}
+
+struct EIP712Domain {
+  string name;
+  string version;
+  uint256 chainId;
+  address verifyingContract;
+}
+
 interface IDSA {
   function cast(
     string[] calldata _targetNames,
@@ -9,20 +22,26 @@ interface IDSA {
   ) external payable returns (bytes32);
 }
 
+interface IMetaTxAuthority {
+  function verify(
+    CastData memory castData,
+    address sender,
+    uint8 v,
+    bytes32 r,
+    bytes32 s
+  ) external view returns (bool);
+
+  function cast(
+    CastData memory castData, 
+    address sender,
+    address dsa,
+    uint8 v, 
+    bytes32 r, 
+    bytes32 s
+  ) external payable;
+}
+
 contract MetaTxAuthority {
-  struct CastData {
-    string[] _targetNames;
-    bytes[] _datas;
-    address _origin;
-  }
-
-  struct EIP712Domain {
-    string name;
-    string version;
-    uint256 chainId;
-    address verifyingContract;
-  }
-
   bytes32 public DOMAIN_SEPARATOR;
 
   constructor() {
