@@ -3,13 +3,7 @@ pragma solidity ^0.8.0;
 
 import { IConnext } from "@connext/interfaces/core/IConnext.sol";
 import { IXReceiver } from "@connext/interfaces/core/IXReceiver.sol";
-import { IInstadappTargetAuth } from "./InstadappTargetAuth.sol";
-
-struct CastData {
-  string[] _targetNames;
-  bytes[] _datas;
-  address _origin;
-}
+import { IInstadappTargetAuth, CastData } from "./InstadappTargetAuth.sol";
 
 contract InstadappTarget is IXReceiver {
   // Whitelist addresses allowed to call xReceive
