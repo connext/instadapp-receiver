@@ -17,32 +17,6 @@ struct EIP712Domain {
   address verifyingContract;
 }
 
-interface IDSA {
-  function cast(
-    string[] calldata _targetNames,
-    bytes[] calldata _datas,
-    address _origin
-  ) external payable returns (bytes32);
-}
-
-interface IInstadappTargetAuth {
-  function verify(
-    CastData memory castData,
-    address sender,
-    uint8 v,
-    bytes32 r,
-    bytes32 s
-  ) external view returns (bool);
-
-  function authCast(
-    CastData memory castData,
-    address sender,
-    uint8 v,
-    bytes32 r,
-    bytes32 s
-  ) external payable;
-}
-
 contract InstadappXReceiver is IXReceiver {
   // Whitelist addresses allowed to call xReceive
   // function whitelistAddress()
@@ -50,12 +24,7 @@ contract InstadappXReceiver is IXReceiver {
   // The Connext contract on this domain
   IConnext public connext;
 
-  // The MetaTxAuthority contract on this domain
-  IInstadappTargetAuth public targetAuth;
-
   bytes32 public DOMAIN_SEPARATOR;
-  // The Connext contract on this domain
-  IDSA public dsa;
 
   modifier onlyConnext() {
     require(msg.sender == address(connext), "Caller must be Connext");
@@ -124,7 +93,6 @@ contract InstadappXReceiver is IXReceiver {
     require(verify(castData, sender, v, r, s), "Invalid signature");
 
     // send funds to DSA
-    dsa.cast{ value: msg.value }(castData._targetNames, castData._datas, castData._origin);
   }
 
   function xReceive(
