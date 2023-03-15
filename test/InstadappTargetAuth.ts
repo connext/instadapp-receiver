@@ -1,15 +1,13 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { TypedDataUtils } from "ethers-eip712";
-import { mkAddress } from "@connext/nxtp-utils";
 
 describe("InstadappTargetAuth", function () {
+  const hardhatChainId = 31337;
+
   async function deploy() {
     // Contracts are deployed using the first signer/account by default
     const [owner, otherAccount] = await ethers.getSigners();
-
 
     const dsaAddr = "0x8f7492DE823025b4CfaAB1D34c58963F2af5DEDA";
 
@@ -35,12 +33,12 @@ describe("InstadappTargetAuth", function () {
       domain: {
         name: "InstadappTargetAuth",
         version: "1",
-        chainId: 1,
-        verifyingContract: await instance.getAddress(),
+        chainId: hardhatChainId,
+        verifyingContract: await instance.address,
       },
       message: {
-        _targetNames: [""],
-        _datas: [""],
+        _targetNames: ["target1", "target2"],
+        _datas: [ethers.utils.hexlify([1, 2, 3]), ethers.utils.hexlify([4, 5, 6])],
         _origin: await otherAccount.getAddress(),
       },
     };
@@ -52,18 +50,20 @@ describe("InstadappTargetAuth", function () {
     it("Should work", async function () {
       const { instance, owner, otherAccount, typedData } = await deploy();
 
-      const digest = TypedDataUtils.encodeDigest(typedData);
-      const digestHex = ethers.hexlify(digest);
-
       const wallet = ethers.Wallet.createRandom();
-      const signature = wallet.signMessage(digest);
 
+      const digest = TypedDataUtils.encodeDigest(typedData);
+      const signature = await wallet.signMessage(ethers.utils.arrayify(digest));
+      console.log(`signature: ${signature}`);
+
+      const { r, s, v } = ethers.utils.splitSignature(signature);
+      console.log(r, s, v);
 
       const sender = await wallet.getAddress();
+      console.log(`sender: ${sender}`);
 
-      console.log(signature)
-
-      // instance.connect(otherAccount).verify(mockCastData, sender, );
+      const verified = await instance.connect(otherAccount).verify(typedData.message, sender, v, r, s);
+      expect(verified).to.be.true;
     });
   });
 });
